@@ -15,4 +15,4 @@ How to use
 
 To copy/paste you might have to click the icon on the top left of the command window.
 
-Note this is an early version and there might still be vulnerabilities.
+Note this is an early version and there might still be vulnerabilities and bugs.
