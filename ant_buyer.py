@@ -14,9 +14,9 @@ while 1:
         # choose name
         print "Enter a name to create a buy offer for. Example: d/nx"
         name = raw_input()
-        try:    
+        try:
             sellerAddress = rpc.call("name_show", [name])["address"]
-        except namerpc.RPCError as e:
+        except namerpc.RpcError as e:
             if e.args[0]["error"]["code"] == -4:  # failed to read from db
                 raise Exception("Name is not yet registered.")
 
@@ -69,7 +69,7 @@ while 1:
         tx = rpc.call("decoderawtransaction", [rawTx])
         shared.analyze_tx(tx, rpc)
 
-        # output    
+        # output
         print "\n" + rawTx
         print "\nDone. Send the string above to the seller."
 

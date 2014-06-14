@@ -31,9 +31,11 @@ DEFAULTCLIENTPORT =  8332
 DEFAULTNMCONTROLPORT =  9000
 HOST = "127.0.0.1"
 
-class RPCError (Exception):
-    def __init__ (self, data=None):
-        self.args = [data]
+class RpcError(Exception):
+    pass
+
+class RpcConnectionError(Exception):
+    pass
 
 class CoinRpc(object):
     """connectionType: client or nmcontrol"""
@@ -42,16 +44,13 @@ class CoinRpc(object):
         self.queryid = 1
         self.connectionType = connectionType
         if options == None:
-            if connectionType == "nmcontrol":                
+            if connectionType == "nmcontrol":
                 options = {"rpcport":"9000"}
             else:
                 options = self.get_options()
         self.options = options
         self.host = HOST
-        try:
-            self.call("getbalance")  # check connection
-        except:
-            raise Exception("Could not connect to Namecoin client.")
+        # check connection ?
 
     def call(self, method="getinfo", params=[]):
         data = {"method": method, "params": params, "id": self.queryid}
@@ -68,7 +67,7 @@ class CoinRpc(object):
         self.queryid = self.queryid + 1
 
         if val["error"] is not None:
-            raise RPCError(val)  # attn: different format for client and nmcontrol
+            raise RpcError(val)  # attn: different format for client and nmcontrol
 
         return val["result"]
 
@@ -112,7 +111,8 @@ class CoinRpc(object):
             s.close()
             return result
         except socket.error as exc:
-            raise Exception("Socket error in RPC connection: %s" % str(exc))
+            raise RpcConnectionError("Socket error in RPC connection to " +
+                                     "%s: %s" % (str(self.connectionType), str(exc)))
 
     def lookup_conf_folder(self):
         if sys.platform == "darwin":
@@ -149,7 +149,7 @@ class CoinRpc(object):
     def is_locked(self):
         try:
             self.call("sendtoaddress", ["", 0.00000001])  # Certainly there is a more elegant way to check for a locked wallet?
-        except RPCError as e:
+        except RpcError as e:
             if e.args[0]["error"]["code"] == -4:  # invalid namecoin address
                 return False
             if e.args[0]["error"]["code"] == -13:  # wallet is locked
@@ -174,15 +174,19 @@ class CoinRpc(object):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         print "NMControl"
-        rpc = CoinRpc(connectionType="nmcontrol")    
-        print rpc.call("help")["reply"]
-        print rpc.call("data", ["getData", "d/nx"])["reply"]
+        try:
+            rpc = CoinRpc(connectionType="nmcontrol")
+            print rpc.call("help")["reply"]
+            print rpc.call("data", ["getData", "d/nx"])["reply"]
+        except:
+            import traceback
+            traceback.print_exc()            
 
-        print "\n\n\nNamecoind"        
+        print "\n\n\nNamecoind"
         rpc = CoinRpc()
         print rpc.call("getinfo")
         print rpc.call("name_show", ["d/nx"])
     else:
-        cmd = sys.argv[1]            
+        cmd = sys.argv[1]
         rpc = CoinRpc()
         print rpc.call(cmd, sys.argv[2:])

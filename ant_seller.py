@@ -35,8 +35,8 @@ while 1:
                 continue
             hexTx += r
             try:
-                tx = rpc.call("decoderawtransaction", [hexTx])        
-            except namerpc.RPCError as e:
+                tx = rpc.call("decoderawtransaction", [hexTx])
+            except namerpc.RpcError as e:
                 if (e.args[0]["error"]["code"] == -8 or e.args[0]["error"]["code"] == -22):  # decode errors
                     continue
                 raise
@@ -79,7 +79,7 @@ while 1:
         try:
             prevName = shared.get_name(pTx["vout"])
         except IndexError:
-            raise Exception("Multiple names in previous tx. Currently not supported.")        
+            raise Exception("Multiple names in previous tx. Currently not supported.")
         if prevName != name:
             raise Exception("Wrong name in previous tx: " + str(prevName) + " Bailing due to fraud potential.")
 
