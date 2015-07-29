@@ -117,7 +117,7 @@ class CoinRpc(object):
     def lookup_conf_folder(self):
         if sys.platform == "darwin":
             if "HOME" in environ:
-                dataFolder = path.join(os.environ["HOME"],
+                dataFolder = path.join(environ["HOME"],
                                        "Library/Application Support/", COINAPP) + '/'
             else:
                 print ("Could not find home folder, please report.")
@@ -180,7 +180,7 @@ if __name__ == "__main__":
             print rpc.call("data", ["getData", "d/nx"])["reply"]
         except:
             import traceback
-            traceback.print_exc()            
+            traceback.print_exc()
 
         print "\n\n\nNamecoind"
         rpc = CoinRpc()
